@@ -4,8 +4,8 @@ var ChainList = artifacts.require("./ChainList.sol");
 // Test suite
 contract('ChainList', function(accounts) {
 
-  var ChainListInstance;
-  var seller = account[1];
+  var chainListInstance;
+  var seller = accounts[1];
   var articleName = "article 1";
   var articleDescription = "Description from article 1";
   var articlePrice = 10;
@@ -22,5 +22,17 @@ contract('ChainList', function(accounts) {
     });
   });
 
-
+  it("should sell an article", function() {
+    return ChainList.deployed().then(function(instance) {
+      chainListInstance = instance;
+      return chainListInstance.sellArticle(articleName, articleDescription, web3.toWei(articlePrice, "ether"), {from: seller});
+    }).then(function() {
+      return chainListInstance.getArticle.call();
+    }).then(function(data) {
+      assert.equal(data[0], seller, "seller must be " + seller);
+      assert.equal(data[1], articleName, "article must be " + articleName);
+      assert.equal(data[2], articleDescription, "article description must be " + articleDescription);
+      assert.equal(data[3].toNumber(), web3.toWei(articlePrice, "ether"), "article price must be " + web3.toWei(articlePrice, "ether"));
+    });
+  });
 });
