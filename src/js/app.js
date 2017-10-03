@@ -3,55 +3,45 @@ App = {
   contracts: {},
 
   init: function() {
-    // Load articles
-    var articleRows = $('#articleRows');
-    var articleTemplate = $('#articleTemplate');
-
-    articleTemplate.find('.panel-title').text("article one");
-    articleTemplate.find('.article-description').text("Description for this article");
-    articleTemplate.find('.article-price').text("10.23");
-    articleTemplate.find('.article-seller').text("0x01234567890123456789012345678901");
-
-    articleRows.append(articleTemplate.html());
-
     return App.initWeb3();
   },
 
   initWeb3: function() {
-    /*
-     * Replace me...
-     */
-
+    // Initalizie web3 and set the provider to the testrpc.
+    if (typeof web3 !== 'undefined') {
+      App.web3Provider = web3.currentProvider;
+      web3 = new Web3(web3.currentProvider)
+    } else {
+      // set the provider you want from Web3.providers
+      App.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
+      web3 = new Web3(App.web3Provider);
+    }
+    App.displayAccountInfo();
     return App.initContract();
   },
 
+  displayAccountInfo: function() {
+    web3.eth.getCoinbase(function(err, account) {
+      if (err === null) {
+        App.account = account;
+        $("#account").text(account);
+        web3.eth.getBalance(account, function(err, balance) {
+          if (err === null) {
+            $("#accountBalance").text(web3.fromWei(balance, "ether") + " ETH")
+          }
+        });
+      }
+    });
+  },
+
   initContract: function() {
-    /*
-     * Replace me...
-     */
-
-    return App.bindEvents();
+    $.getJSON('ChainList.json', function(chainListArtifact) {
+      // get the necessay contract artifact file and use it to instantiate a truffle contract abstraction.
+      App.contracts.ChainList = TruffleContract(chainListArtifact);
+      // Set the provider for out contract
+      App.contracts.ChainList = setProvider(App.web3Provider);
+    });
   },
-
-  bindEvents: function() {
-    $(document).on('click', '.btn-adopt', App.handleAdopt);
-  },
-
-  markAdopted: function(adopters, account) {
-    /*
-     * Replace me...
-     */
-  },
-
-  handleAdopt: function() {
-    event.preventDefault();
-
-    var petId = parseInt($(event.target).data('id'));
-
-    /*
-     * Replace me...
-     */
-  }
 
 };
 
