@@ -8,10 +8,10 @@ App = {
   },
 
   initWeb3: function() {
-    // Initalizie web3 and set the provider to the testrpc.
+    // Initialize web3 and set the provider to the testRPC.
     if (typeof web3 !== 'undefined') {
       App.web3Provider = web3.currentProvider;
-      web3 = new Web3(web3.currentProvider)
+      web3 = new Web3(web3.currentProvider);
     } else {
       // set the provider you want from Web3.providers
       App.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
@@ -28,7 +28,7 @@ App = {
         $("#account").text(account);
         web3.eth.getBalance(account, function(err, balance) {
           if (err === null) {
-            $("#accountBalance").text(web3.fromWei(balance, "ether") + " ETH")
+            $("#accountBalance").text(web3.fromWei(balance, "ether") + " ETH");
           }
         });
       }
@@ -37,16 +37,22 @@ App = {
 
   initContract: function() {
     $.getJSON('ChainList.json', function(chainListArtifact) {
-      // get the necessay contract artifact file and use it to instantiate a truffle contract abstraction.
+      // Get the necessary contract artifact file and use it to instantiate a truffle contract abstraction.
       App.contracts.ChainList = TruffleContract(chainListArtifact);
-      // Set the provider for out contract
+
+      // Set the provider for our contract.
       App.contracts.ChainList.setProvider(App.web3Provider);
+
+      // Listen for events
+      App.listenToEvents();
+
+      // Retrieve the article from the smart contract
       return App.reloadArticles();
     });
   },
 
   reloadArticles: function() {
-    // refresh account information because the balance my have changed
+    // refresh account information because the balance may have changed
     App.displayAccountInfo();
 
     App.contracts.ChainList.deployed().then(function(instance) {
@@ -57,11 +63,11 @@ App = {
         return;
       }
 
-      // Retrieve and clear the articel placeholder
-      var articleRow = $('#articleRow');
-      articleRow.empty();
+      // Retrieve and clear the article placeholder
+      var articlesRow = $('#articlesRow');
+      articlesRow.empty();
 
-      // Retrieve and fill article template
+      // Retrieve and fill the article template
       var articleTemplate = $('#articleTemplate');
       articleTemplate.find('.panel-title').text(article[1]);
       articleTemplate.find('.article-description').text(article[2]);
@@ -75,7 +81,7 @@ App = {
       articleTemplate.find('.article-seller').text(seller);
 
       // add this new article
-      articleRow.append(articleTemplate.html());
+      articlesRow.append(articleTemplate.html());
     }).catch(function(err) {
       console.log(err.message);
     });
@@ -98,9 +104,22 @@ App = {
         gas: 500000
       });
     }).then(function(result) {
-      App.reloadArticles();
+
     }).catch(function(err) {
       console.error(err);
+    });
+  },
+
+  // Listen for events raised from the contract
+  listenToEvents: function() {
+    App.contracts.ChainList.deployed().then(function(instance) {
+      instance.sellArticleEvent({}, {
+        fromBlock: 0,
+        toBlock: 'latest'
+      }).watch(function(error, event) {
+        $("#events").append('<li class="list-group-item">' + event.args._name + ' is for sale' + '</li>');
+        App.reloadArticles();
+      });
     });
   },
 };
