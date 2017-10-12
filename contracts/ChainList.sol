@@ -50,12 +50,12 @@ contract ChainList {
     // dont allow the seller to buy his own article
     require(msg.sender != seller);
     // check whether the value sent corresponds to the article price
-    require(msg.sender == price);
+    require(msg.value == price);
     // keep buyers information
     buyer = msg.sender;
     //the buyer can buy the article
     seller.transfer(msg.value);
     //trigger the event
-    buyArticleEvent(sellerm buyer, name, price);
+    buyArticleEvent(seller, buyer, name, price);
   }
 }
