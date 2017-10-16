@@ -132,8 +132,20 @@
       "links": {},
       "address": "0x896f0d69c6d1e718c731e8fa104dc423f91ccd8e",
       "updated_at": 1508166763269
+    },
+    "1508168561154": {
+      "events": {},
+      "links": {},
+      "address": "0x896f0d69c6d1e718c731e8fa104dc423f91ccd8e",
+      "updated_at": 1508168574286
+    },
+    "1508169358562": {
+      "events": {},
+      "links": {},
+      "address": "0x896f0d69c6d1e718c731e8fa104dc423f91ccd8e",
+      "updated_at": 1508169367921
     }
   },
   "schema_version": "0.0.5",
-  "updated_at": 1508166763269
+  "updated_at": 1508169367921
 }

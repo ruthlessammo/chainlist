@@ -1,20 +1,19 @@
 pragma solidity ^0.4.11;
 
 contract ChainList {
-  //Custom types
+  // Custom types
   struct Article {
-   uint id;
-   address seller;
-   address buyer;
-   string name;
-   string description;
-   uint256 price;
+    uint id;
+    address seller;
+    address buyer;
+    string name;
+    string description;
+    uint256 price;
   }
 
-  //state variables
+  // State variables
   mapping(uint => Article) public articles;
   uint articleCounter;
-
 
   // Events
   event sellArticleEvent (
@@ -23,7 +22,6 @@ contract ChainList {
     string _name,
     uint256 _price
   );
-
   event buyArticleEvent (
     uint indexed _id,
     address indexed _seller,
@@ -32,71 +30,83 @@ contract ChainList {
     uint256 _price
   );
 
-  // Sell an article
+  // sell an article
   function sellArticle(string _name, string _description, uint256 _price) public {
-    //a new article
+    // a new article
     articleCounter++;
-    //store this article
+
+    // store this article
     articles[articleCounter] = Article(
-      articleCounter,
-      msg.sender,
-      0x0,
-      _name,
-      _description,
-      _price
+         articleCounter,
+         msg.sender,
+         0x0,
+         _name,
+         _description,
+         _price
     );
-    //trigger the event
+
+    // trigger the event
     sellArticleEvent(articleCounter, msg.sender, _name, _price);
   }
 
   // fetch the number of articles in the contract
-  function getNumberofArticles() public constant returns (uint) {
+  function getNumberOfArticles() public constant returns (uint) {
     return articleCounter;
   }
 
-  //fetch and return all articles IDs avaliable for sale
+  // fetch and returns all article IDs available for sale
   function getArticlesForSale() public constant returns (uint[]) {
-    //we check wheether there is at least one article
+    // we check whether there is at least one article
     require(articleCounter > 0);
 
-    //prepare output arrays
-    uint[] memory articlesIds = new uint[](articleCounter);
-    uint numberOfArtilcesForSale = 0;
-    //iterate over articles
-    for(uint i = 1; i <= articleCounter; i++) {
-      //keep only the ID for the article not already sold
-      if(articles[i].buyer == 0x0) {
-        articlesIds[numberOfArtilcesForSale] = articles[i].id;
-        numberOfArtilcesForSale++;
+    // prepare intermediary array
+    uint[] memory articleIds = new uint[](articleCounter);
+
+    uint numberOfArticlesForSale = 0;
+    // iterate over articles
+    for (uint i = 1; i <= articleCounter; i++) {
+      // keep only the ID of articles not sold yet
+      if (articles[i].buyer == 0x0) {
+        articleIds[numberOfArticlesForSale] = articles[i].id;
+        numberOfArticlesForSale++;
       }
     }
-    //copy the articlesIds array into the smaller forSale array
-    uint[] memory forSale = new uint[](numberOfArtilcesForSale);
-    for(uint j = 0; j < numberOfArtilcesForSale; j++) {
-      forSale[j] = articlesIds[j];
+
+    // copy the articleIds array into the smaller forSale array
+    uint[] memory forSale = new uint[](numberOfArticlesForSale);
+    for (uint j = 0; j < numberOfArticlesForSale; j++) {
+      forSale[j] = articleIds[j];
     }
     return (forSale);
   }
 
-  // Buy article
+  // buy an article
   function buyArticle(uint _id) payable public {
     // we check whether there is at least one article
-    require(articleCounter < 0);
-    //we check whether the article exists
+    require(articleCounter > 0);
+
+    // we check whether the article exists
     require(_id > 0 && _id <= articleCounter);
+
     // we retrieve the article
     Article storage article = articles[_id];
+
     // we check whether the article has not already been sold
     require(article.buyer == 0x0);
-    // we dont allow seller to be thebuyer
+
+    // we don't allow the seller to buy his/her own article
     require(article.seller != msg.sender);
-    //check whether the value sent corresponds ot the article price
+
+    // we check whether the value sent corresponds to the article price
     require(article.price == msg.value);
-    //keep the buyers information
+
+    // keep buyer's information
     article.buyer = msg.sender;
-    //the buyer can buy the article
+
+    // the buyer can buy the article
     article.seller.transfer(msg.value);
-    //trgger the event
+
+    // trigger the event
     buyArticleEvent(_id, article.seller, article.buyer, article.name, article.price);
   }
 }
