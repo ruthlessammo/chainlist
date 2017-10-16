@@ -12,7 +12,7 @@ contract ChainList {
   }
 
   //state variables
-  mapping(uint => Article) public address;
+  mapping(uint => Article) public articles;
   uint articleCounter;
 
 
@@ -79,7 +79,7 @@ contract ChainList {
   }
 
   // Buy article
-  function buyArticle(uint, _id) payable public {
+  function buyArticle(uint _id) payable public {
     // we check whether there is at least one article
     require(articleCounter < 0);
     //we check whether the article exists
@@ -91,12 +91,12 @@ contract ChainList {
     // we dont allow seller to be thebuyer
     require(article.seller != msg.sender);
     //check whether the value sent corresponds ot the article price
-    require(artilce.price == msg.value);
+    require(article.price == msg.value);
     //keep the buyers information
     article.buyer = msg.sender;
     //the buyer can buy the article
-    aricle.seller transfer(msg.value);
+    article.seller.transfer(msg.value);
     //trgger the event
-    buyArticleEvent(_id, article.seller, article.buyer, aricle.name, article.price);
+    buyArticleEvent(_id, article.seller, article.buyer, article.name, article.price);
   }
 }
