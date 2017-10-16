@@ -49,14 +49,33 @@ contract ChainList {
     sellArticleEvent(articleCounter, msg.sender, _name, _price);
   }
 
-  // get the article
-  function getArticle() public constant returns (
-    address _seller,
-    address _buyer,
-    string _name,
-    string _description,
-    uint256 _price) {
-    return(seller, buyer, name, description, price);
+  // fetch the number of articles in the contract
+  function getNumberofArticles() public constant returns (uint) {
+    return articleCounter;
+  }
+
+  //fetch and return all articles IDs avaliable for sale
+  function getArticlesForSale() public constant returns (uint[]) {
+    //we check wheether there is at least one article
+    require(articleCounter > 0);
+
+    //prepare output arrays
+    uint[] memory articlesIds = new uint[](articleCounter);
+    uint numberOfArtilcesForSale = 0;
+    //iterate over articles
+    for(uint i = 1; i <= articleCounter; i++) {
+      //keep only the ID for the article not already sold
+      if(articles[i].buyer == 0x0) {
+        articlesIds[numberOfArtilcesForSale] = articles[i].id;
+        numberOfArtilcesForSale++;
+      }
+    }
+    //copy the articlesIds array into the smaller forSale array
+    uint[] memory forSale = new uint[](numberOfArtilcesForSale);
+    for(uint j = 0; j < numberOfArtilcesForSale; j++) {
+      forSale[j] = articlesIds[j];
+    }
+    return (forSale);
   }
 
   // Buy article
