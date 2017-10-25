@@ -2,7 +2,7 @@
 var ChainList = artifacts.require("./ChainList.sol");
 
 // Test suite
-contract('ChainList', function(accounts) {
+contract('ChainList', (accounts) => {
   var chainListInstance;
   var seller = accounts[1];
   var buyer = accounts[2];
@@ -12,19 +12,19 @@ contract('ChainList', function(accounts) {
   var articlePrice = 10;
 
   // Test case: buying an article when no article for sale yet
-  it("should throw an exception if you try to buy an article when there is no article for sale", function() {
-    return ChainList.deployed().then(function(instance) {
+  it("should throw an exception if you try to buy an article when there is no article for sale", () => {
+    return ChainList.deployed().then((instance) => {
         chainListInstance = instance;
         return chainListInstance.buyArticle(articleId, {
           from: buyer,
           value: web3.toWei(articlePrice, "ether")
         });
       }).then(assert.fail)
-      .catch(function(error) {
+      .catch((error) => {
         assert(error.message.indexOf('invalid opcode') >= 0, "error message must contain invalid opcode");
-      }).then(function() {
+      }).then(() => {
         return chainListInstance.getNumberOfArticles();
-      }).then(function(data) {
+      }).then((data) => {
         //make sure sure the contract state was not altered
         assert.equal(data.toNumber(), 0, "number of articles must be zero");
       });
