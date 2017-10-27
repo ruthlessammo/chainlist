@@ -4,11 +4,11 @@ App = {
   account: 0x0,
   loading: false,
 
-  init: function() {
+  init: () => {
     return App.initWeb3();
   },
 
-  initWeb3: function() {
+  initWeb3: () => {
     // Initialize web3 and set the provider to the testRPC.
     if (typeof web3 !== 'undefined') {
       App.web3Provider = web3.currentProvider;
@@ -22,12 +22,12 @@ App = {
     return App.initContract();
   },
 
-  displayAccountInfo: function() {
-    web3.eth.getCoinbase(function(err, account) {
+  displayAccountInfo: () => {
+    web3.eth.getCoinbase((err, account) => {
       if (err === null) {
         App.account = account;
         $("#account").text(account);
-        web3.eth.getBalance(account, function(err, balance) {
+        web3.eth.getBalance(account, (err, balance) => {
           if (err === null) {
             $("#accountBalance").text(web3.fromWei(balance, "ether") + " ETH");
           }
@@ -36,8 +36,8 @@ App = {
     });
   },
 
-  initContract: function() {
-    $.getJSON('ChainList.json', function(chainListArtifact) {
+  initContract: () => {
+    $.getJSON('ChainList.json', (chainListArtifact) => {
       // Get the necessary contract artifact file and use it to instantiate a truffle contract abstraction.
       App.contracts.ChainList = TruffleContract(chainListArtifact);
 
@@ -52,7 +52,7 @@ App = {
     });
   },
 
-  reloadArticles: function() {
+  reloadArticles: () => {
     // avoid reentry
     if (App.loading) {
       return;
@@ -62,19 +62,19 @@ App = {
     // refresh account information because the balance may have changed
     App.displayAccountInfo();
 
-    var chainListInstance;
+    let chainListInstance;
 
-    App.contracts.ChainList.deployed().then(function(instance) {
+    App.contracts.ChainList.deployed().then((instance) => {
       chainListInstance = instance;
       return chainListInstance.getArticlesForSale();
-    }).then(function(articleIds) {
+    }).then((articleIds) => {
       // Retrieve and clear the article placeholder
-      var articlesRow = $('#articlesRow');
+      const articlesRow = $('#articlesRow');
       articlesRow.empty();
 
-      for (var i = 0; i < articleIds.length; i++) {
+      for (let i = 0; i < articleIds.length; i++) {
         var articleId = articleIds[i];
-        chainListInstance.articles(articleId).then(function(article) {
+        chainListInstance.articles(articleId).then((article) => {
           App.displayArticle(
             article[0],
             article[1],
@@ -85,20 +85,20 @@ App = {
         });
       }
       App.loading = false;
-    }).catch(function(err) {
+    }).catch((err) => {
       console.log(err.message);
       App.loading = false;
     });
   },
 
-  displayArticle: function(id, seller, name, description, price) {
+  displayArticle: (id, seller, name, description, price) => {
     // Retrieve the article placeholder
-    var articlesRow = $('#articlesRow');
+    const articlesRow = $('#articlesRow');
 
-    var etherPrice = web3.fromWei(price, "ether");
+    const etherPrice = web3.fromWei(price, "ether");
 
     // Retrieve and fill the article template
-    var articleTemplate = $('#articleTemplate');
+    const articleTemplate = $('#articleTemplate');
     articleTemplate.find('.panel-title').text(name);
     articleTemplate.find('.article-description').text(description);
     articleTemplate.find('.article-price').text(etherPrice + " ETH");
@@ -118,11 +118,11 @@ App = {
     articlesRow.append(articleTemplate.html());
   },
 
-  sellArticle: function() {
+  sellArticle: () => {
     // retrieve details of the article
-    var _article_name = $("#article_name").val();
-    var _description = $("#article_description").val();
-    var _price = web3.toWei(parseFloat($("#article_price").val() || 0), "ether");
+    let _article_name = $("#article_name").val();
+    let _description = $("#article_description").val();
+    let _price = web3.toWei(parseFloat($("#article_price").val() || 0), "ether");
 
     if ((_article_name.trim() == '') || (_price == 0)) {
       // nothing to sell
@@ -134,16 +134,16 @@ App = {
         from: App.account,
         gas: 500000
       });
-    }).then(function(result) {
+    }).then((result) => {
 
-    }).catch(function(err) {
+    }).catch((err) => {
       console.error(err);
     });
   },
 
   // Listen for events raised from the contract
-  listenToEvents: function() {
-    App.contracts.ChainList.deployed().then(function(instance) {
+  listenToEvents: () => {
+    App.contracts.ChainList.deployed().then((instance) => {
       instance.sellArticleEvent({}, {
         fromBlock: 0,
         toBlock: 'latest'
@@ -155,36 +155,36 @@ App = {
       instance.buyArticleEvent({}, {
         fromBlock: 0,
         toBlock: 'latest'
-      }).watch(function(error, event) {
+      }).watch((error, event) => {
         $("#events").append('<li class="list-group-item">' + event.args._buyer + ' is for sale' + '</li>');
         App.reloadArticles();
       });
     });
   },
 
-  buyArticle: function() {
+  buyArticle: () => {
     event.preventDefault();
 
     // retrieve the article price
-    var _articleId = $(event.target).data('id');
-    var _price = parseFloat($(event.target).data('value'));
+    let _articleId = $(event.target).data('id');
+    let _price = parseFloat($(event.target).data('value'));
 
-    App.contracts.ChainList.deployed().then(function(instance) {
+    App.contracts.ChainList.deployed().then((instance) => {
       return instance.buyArticle(_articleId, {
         from: App.account,
         value: web3.toWei(_price, "ether"),
         gas: 500000
       });
-    }).then(function(result) {
+    }).then((result) => {
 
-    }).catch(function(err) {
+    }).catch((err) => {
       console.error(err);
     });
   },
 };
 
-$(function() {
-  $(window).load(function() {
+$(() => {
+  $(window).load(() => {
     App.init();
   });
 });
